@@ -1,0 +1,36 @@
+[Cake\Routing\Exception\MissingRouteException] A route matching `array (
+  'controller' => 'Users',
+  'action' => 'login',
+  'plugin' => NULL,
+  '_ext' => NULL,
+)` could not be found. in C:\laragon\www\cashier\backend\vendor\cakephp\cakephp\src\Routing\RouteCollection.php on line 317
+
+Exception Attributes
+
+array (
+  'url' => 'array (
+  \'controller\' => \'Users\',
+  \'action\' => \'login\',
+  \'plugin\' => NULL,
+  \'_ext\' => NULL,
+)',
+  'context' => 
+  array (
+    '_base' => false,
+    'params' => 
+    array (
+      'plugin' => NULL,
+      'controller' => NULL,
+      'action' => 'index',
+      '_ext' => NULL,
+    ),
+  ),
+)
+
+Stack Trace:
+
+Cake\Routing\RouteCollection->match() - CORE\src\Routing\Router.php, line 453
+Cake\Routing\Router::url() - APP/Application.php, line 139
+App\Application->getAuthenticationService() - C:\laragon\www\cashier\test_auth.php, line 22
+[main] - [main], line 0
+
