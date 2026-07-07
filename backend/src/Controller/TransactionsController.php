@@ -161,9 +161,18 @@ class TransactionsController extends AppController
         if ($this->request->is(['patch', 'post', 'put'])) {
             $transaction = $this->Transactions->patchEntity($transaction, $this->request->getData());
             if ($this->Transactions->save($transaction)) {
+                if ($this->request->is('json')) {
+                    $this->set(['success' => true, 'transaction' => $transaction]);
+                    $this->viewBuilder()->setOption('serialize', ['success', 'transaction']);
+                    return;
+                }
                 $this->Flash->success(__('The transaction has been saved.'));
-
                 return $this->redirect(['action' => 'index']);
+            }
+            if ($this->request->is('json')) {
+                $this->set(['success' => false, 'errors' => $transaction->getErrors()]);
+                $this->viewBuilder()->setOption('serialize', ['success', 'errors']);
+                return;
             }
             $this->Flash->error(__('The transaction could not be saved. Please, try again.'));
         }
