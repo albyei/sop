@@ -146,6 +146,35 @@ foreach ($transactions as $t) {
   }
   .tab.active .count{ background:var(--ink); color:var(--paper); }
 
+  /* ---------- Summary Bar ---------- */
+  .summary-bar{
+    display:flex; align-items:stretch;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 8px;
+    margin-bottom:14px;
+  }
+  .summary-stat{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    text-align:center;
+    padding:0 6px;
+  }
+  .summary-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700; font-size:1.15rem;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .summary-value.accent{ color:var(--green-dark); }
+  .summary-label{
+    font-family:'Inter'; font-weight:600; font-size:0.66rem;
+    letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .summary-divider{ width:1px; background:var(--line); margin:2px 0; }
+
   /* ---------- List ---------- */
   main{ padding:14px 16px 40px; }
 
@@ -418,7 +447,20 @@ foreach ($transactions as $t) {
     </div>
   </header>
 
-  <main id="txnList"></main>
+  <main>
+    <div class="summary-bar" id="summaryBar">
+      <div class="summary-stat">
+        <div class="summary-value" id="sumCountVal">0</div>
+        <div class="summary-label">Transactions</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-stat">
+        <div class="summary-value accent" id="sumAmountVal">Rp 0</div>
+        <div class="summary-label" id="sumAmountLabel">Total Collected</div>
+      </div>
+    </div>
+    <div id="txnList"></div>
+  </main>
 
   <nav class="bottom-nav">
     <a href="<?= $this->Url->build(['controller' => 'Pages', 'action' => 'mobilePos']) ?>" class="nav-item">
@@ -575,9 +617,21 @@ foreach ($transactions as $t) {
     return `${names.slice(0,2).join(", ")} <span class="more">+${names.length-2} more</span>`;
   }
 
+  function updateSummary(list){
+    const count = list.length;
+    
+    // Always sum today's PAID transactions for "Total Collected"
+    const todayPaid = getTodayTransactions().filter(t => t.status === "paid");
+    const amount = todayPaid.reduce((s, t) => s + txnTotal(t), 0);
+    
+    document.getElementById("sumCountVal").textContent = count;
+    document.getElementById("sumAmountVal").textContent = rupiah(amount);
+  }
+
   function renderList(){
     updateCounts();
     const list = filteredList();
+    updateSummary(list);
 
     if(list.length === 0){
       txnList.innerHTML = `

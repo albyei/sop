@@ -386,11 +386,7 @@ $this->disableAutoLayout();
 
     <div class="filter-scroll" id="filterScroll">
       <button class="pill active" data-cat="all">All</button>
-      <button class="pill" data-cat="SALAD & FRUIT SOUP">SALAD & FRUIT SOUP</button>
-      <button class="pill" data-cat="YAKULT + UHT MENU">YAKULT + UHT MENU</button>
-      <button class="pill" data-cat="ORIGINAL JUICE">ORIGINAL JUICE</button>
-      <button class="pill" data-cat="MIXED JUICE">MIXED JUICE</button>
-      <button class="pill" data-cat="OTHER DRINKS">OTHER DRINKS</button>
+      <!-- Categories will be injected here by JS -->
     </div>
   </header>
 
@@ -510,6 +506,7 @@ $this->disableAutoLayout();
   }
 
   let MENU = [];
+  let CATEGORIES = [];
   let activeCat = "all";
   let cart = {}; // id -> qty
 
@@ -543,8 +540,8 @@ $this->disableAutoLayout();
   function renderMenu(){
     const groups = {};
     MENU.forEach(item=>{
-      const catName = item.category ? item.category.name : 'OTHER DRINKS';
-      if(activeCat !== "all" && catName !== activeCat) return;
+      const catName = item.category ? item.category : 'OTHER DRINKS';
+      if(activeCat !== "all" && catName.toLowerCase() !== activeCat.toLowerCase()) return;
       groups[catName] = groups[catName] || [];
       groups[catName].push(item);
     });
@@ -811,6 +808,16 @@ $this->disableAutoLayout();
 
   saveBtn.addEventListener("click", () => saveTransaction('pending'));
 
+  function renderCategories() {
+      const filterScroll = document.getElementById("filterScroll");
+      let html = `<button class="pill ${activeCat === 'all' ? 'active' : ''}" data-cat="all">All</button>`;
+      CATEGORIES.forEach(cat => {
+          if(!cat) return;
+          html += `<button class="pill ${activeCat === cat ? 'active' : ''}" data-cat="${cat}">${cat}</button>`;
+      });
+      filterScroll.innerHTML = html;
+  }
+
   async function loadAllMenus() {
       let page = 1;
       let hasMore = true;
@@ -818,8 +825,19 @@ $this->disableAutoLayout();
           const res = await api(`menus.json?page=${page}`);
           if (res && res.menus) {
               MENU = [...MENU, ...res.menus];
-              if (res.paging && res.paging.nextPage) {
+              if (res.categories && page === 1) {
+                  CATEGORIES = res.categories;
+                  // Ensure 'OTHER DRINKS' tab always exists for uncategorized items
+                  if (!CATEGORIES.includes('OTHER DRINKS')) {
+                      CATEGORIES.push('OTHER DRINKS');
+                  }
+                  renderCategories();
+              }
+              // Foolproof pagination
+              if (res.paging && res.paging.pageCount && res.paging.pageCount > page) {
                   page++;
+              } else if (res.menus.length === 24) {
+                  page++; // Fallback if limit hit
               } else {
                   hasMore = false;
               }

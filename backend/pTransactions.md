@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Warung Kita — Transactions</title>
+<title>Transactions — Warung Kita POS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -16,8 +16,10 @@
     --card:#FFFFFF;
     --green:#2F6F4F;
     --green-dark:#245A3E;
-    --red:#C1272D;
+    --green-bg:#E7F1EB;
     --amber:#C98A2C;
+    --amber-bg:#FBF0DD;
+    --red:#C1272D;
     --radius:14px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
     --nav-h:60px;
@@ -33,87 +35,193 @@
     min-height:100vh;
     padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 20px);
   }
+  ::selection{ background:var(--green); color:#fff; }
 
   /* ---------- Header ---------- */
   header.top{
     position:sticky; top:0; z-index:20;
     background:var(--paper);
     border-bottom:1px solid var(--line);
-    padding:14px 16px 14px;
+    padding:14px 16px 12px;
   }
   .top-row{
     display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:12px;
   }
   .brand{
     font-family:'Archivo Black', sans-serif;
-    font-size:1.15rem;
-    letter-spacing:0.01em;
+    font-size:1.1rem;
     line-height:1;
   }
-  .brand span{ color:var(--green); }
   .brand small{
     display:block; margin-top:3px;
     font-family:'Inter'; font-weight:500; font-size:0.68rem;
     letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft);
   }
-
-  /* ---------- Main Transactions ---------- */
-  main{ padding:16px; }
-  
-  .info-banner {
-    background: var(--paper-dim);
-    border-radius: var(--radius);
-    padding: 12px;
-    margin-bottom: 16px;
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .today-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem;
+    color:var(--ink-soft); background:var(--paper-dim);
+    border-radius:999px; padding:6px 12px;
   }
-  .info-banner svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-  .tx-card {
+  /* ---------- Search ---------- */
+  .search-wrap{
+    position:relative;
+    margin-bottom:12px;
+  }
+  .search-wrap svg{
+    position:absolute; left:13px; top:50%; transform:translateY(-50%);
+    width:17px; height:17px; color:var(--ink-soft);
+  }
+  .search-input{
+    width:100%;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:11px 14px 11px 38px;
+    font-family:'Inter'; font-size:0.9rem; color:var(--ink);
+    outline:none;
+  }
+  .search-input:focus{ border-color:var(--green); }
+  .search-input::placeholder{ color:var(--ink-soft); }
+  .clear-search{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    width:22px; height:22px; border-radius:999px; border:none;
+    background:var(--paper-dim); color:var(--ink-soft);
+    font-size:0.8rem; cursor:pointer; display:none;
+  }
+
+  /* ---------- Status tabs ---------- */
+  .tabs{
+    display:flex; gap:6px;
+    background:var(--paper-dim);
+    border-radius:999px;
+    padding:4px;
+  }
+  .tab{
+    flex:1;
+    border:none; background:transparent;
+    color:var(--ink-soft);
+    font-family:'Inter'; font-weight:600; font-size:0.82rem;
+    padding:9px 8px;
+    border-radius:999px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    transition:background .15s ease, color .15s ease;
+  }
+  .tab.active{ background:var(--card); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .tab .count{
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem;
+    background:var(--line); color:var(--ink);
+    border-radius:999px; padding:1px 6px;
+  }
+  .tab.active .count{ background:var(--ink); color:var(--paper); }
+
+  /* ---------- List ---------- */
+  main{ padding:14px 16px 40px; }
+
+  .summary-bar{
+    display:flex; align-items:stretch;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px 8px;
+    margin-bottom:14px;
+  }
+  .summary-stat{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    text-align:center;
+    padding:0 6px;
+  }
+  .summary-value{
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:700; font-size:1.15rem;
+    color:var(--ink);
+    white-space:nowrap;
+  }
+  .summary-value.accent{ color:var(--green-dark); }
+  .summary-value.warn{ color:var(--amber); }
+  .summary-label{
+    font-family:'Inter'; font-weight:600; font-size:0.66rem;
+    letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  .summary-divider{ width:1px; background:var(--line); margin:2px 0; }
+
+  .txn-card{
     background:var(--card);
     border:1px solid var(--line);
     border-radius:var(--radius);
     padding:14px;
     margin-bottom:12px;
   }
-  .tx-head {
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:10px;
-    padding-bottom:10px;
-    border-bottom:1px dashed var(--line);
+  .txn-head{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:10px;
+    margin-bottom:8px;
   }
-  .tx-id {
-    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size:0.85rem;
+  .txn-customer{
+    font-weight:700; font-size:0.98rem; line-height:1.2;
   }
-  .tx-time {
-    font-size:0.75rem; color:var(--ink-soft); font-weight:500;
+  .txn-meta{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem;
+    color:var(--ink-soft); margin-top:3px;
   }
-  .tx-items {
-    font-size:0.85rem; color:var(--ink); line-height:1.5;
+  .status-badge{
+    flex:0 0 auto;
+    font-family:'Inter'; font-weight:700; font-size:0.7rem;
+    letter-spacing:0.03em; text-transform:uppercase;
+    padding:5px 10px; border-radius:999px;
+    white-space:nowrap;
   }
-  .tx-item-row {
-    display:flex; justify-content:space-between; margin-bottom:4px;
-  }
-  .tx-total-row {
-    display:flex; justify-content:space-between; align-items:center;
-    margin-top:10px; padding-top:10px;
+  .status-paid{ background:var(--green-bg); color:var(--green-dark); }
+  .status-pending{ background:var(--amber-bg); color:var(--amber); }
+
+  .txn-items{
+    font-size:0.85rem; color:var(--ink);
+    line-height:1.5;
+    padding:8px 0;
     border-top:1px dashed var(--line);
+    border-bottom:1px dashed var(--line);
+    margin-bottom:10px;
   }
-  .tx-total-label {
-    font-weight:600; font-size:0.85rem; color:var(--ink-soft);
+  .txn-items .more{ color:var(--ink-soft); }
+
+  .txn-foot{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
   }
-  .tx-total-val {
-    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1.05rem; color:var(--green-dark);
+  .txn-total{
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1rem;
+  }
+  .txn-total small{
+    display:block; font-family:'Inter'; font-weight:500; font-size:0.65rem;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft);
+  }
+  .txn-actions{ display:flex; gap:8px; }
+
+  .btn-sm{
+    border:none; border-radius:999px;
+    font-family:'Inter'; font-weight:700; font-size:0.82rem;
+    padding:9px 16px;
+    cursor:pointer;
+    transition:transform .1s ease;
+  }
+  .btn-sm:active{ transform:scale(0.96); }
+  .btn-view{
+    background:var(--paper-dim); color:var(--ink);
+    border:1px solid var(--line);
+  }
+  .btn-pay{
+    background:var(--green); color:#fff;
   }
 
   .empty-state{
-    text-align:center; padding:40px 20px; color:var(--ink-soft);
-    font-size:0.9rem;
+    text-align:center; padding:60px 20px; color:var(--ink-soft);
   }
+  .empty-state .icon{ font-size:2rem; margin-bottom:8px; }
+  .empty-state .msg{ font-size:0.9rem; }
 
   /* ---------- Bottom navbar ---------- */
   .bottom-nav{
@@ -134,10 +242,109 @@
   .nav-item svg{ width:21px; height:21px; }
   .nav-item.active{ color:var(--green-dark); }
 
+  /* ---------- Detail drawer ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,20,17,0.45);
+    z-index:35; opacity:0; pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+
+  .drawer{
+    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    background:var(--card);
+    border-top-left-radius:20px; border-top-right-radius:20px;
+    max-height:86vh;
+    transform:translateY(100%);
+    transition:transform .25s cubic-bezier(.32,.72,0,1);
+    display:flex; flex-direction:column;
+    padding-bottom:var(--safe-bottom);
+  }
+  .drawer.show{ transform:translateY(0); }
+  .drawer-handle{ width:36px; height:4px; background:var(--line); border-radius:999px; margin:10px auto 4px; }
+  .drawer-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 18px 10px;
+  }
+  .drawer-title{ font-family:'Archivo Black'; font-size:1rem; }
+  .drawer-close{
+    border:none; background:var(--paper-dim); color:var(--ink);
+    width:30px; height:30px; border-radius:999px;
+    font-size:1rem; cursor:pointer;
+  }
+  .receipt-edge{
+    height:10px;
+    background-image: radial-gradient(circle at 8px 5px, var(--paper) 5px, transparent 5.5px);
+    background-size:16px 10px; background-repeat:repeat-x;
+    margin:0 14px;
+  }
+  .drawer-body{ flex:1; overflow-y:auto; padding:16px 18px 6px; }
+
+  .detail-row{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:0.85rem; padding:5px 0; color:var(--ink-soft);
+  }
+  .detail-row span:last-child{ color:var(--ink); font-weight:600; }
+
+  .detail-status{ margin:10px 0 4px; }
+
+  .items-block{
+    margin-top:14px;
+    border-top:1px dashed var(--line);
+    padding-top:10px;
+  }
+  .items-block-label{
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem;
+    letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .detail-item-row{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'IBM Plex Mono', monospace; font-size:0.82rem;
+    padding:6px 0;
+  }
+  .detail-item-name{ font-family:'Inter'; font-weight:600; font-size:0.87rem; color:var(--ink); flex:1; }
+  .detail-item-qty{ color:var(--ink-soft); width:34px; text-align:center; }
+  .detail-item-price{ width:82px; text-align:right; color:var(--ink); }
+
+  .drawer-summary{
+    padding:12px 0 0;
+    font-family:'IBM Plex Mono', monospace; font-size:0.85rem;
+    border-top:1px dashed var(--line);
+    margin-top:10px;
+  }
+  .summary-line{ display:flex; justify-content:space-between; padding:4px 0; color:var(--ink-soft); }
+  .summary-total{
+    display:flex; justify-content:space-between;
+    padding:8px 0 2px; font-size:1.05rem; font-weight:700; color:var(--ink);
+  }
+  .summary-total .amt{ color:var(--red); }
+
+  .drawer-actions{ display:flex; gap:10px; padding:16px 18px 18px; }
+  .btn{
+    flex:1; border:none; border-radius:999px;
+    font-family:'Inter'; font-weight:700; font-size:0.95rem;
+    padding:14px 10px; cursor:pointer;
+    transition:transform .1s ease, opacity .15s ease;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-close-only{ background:var(--paper-dim); color:var(--ink); border:1.5px solid var(--line); }
+  .btn-pay-full{ background:var(--green); color:#fff; box-shadow:0 4px 14px rgba(47,111,79,0.35); }
+
+  .toast{
+    position:fixed; left:50%; bottom:calc(var(--nav-h) + var(--safe-bottom) + 14px); transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper);
+    padding:10px 18px; border-radius:999px;
+    font-size:0.85rem; font-weight:600;
+    z-index:60; opacity:0; pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
   @media (min-width:560px){
     body{ display:flex; justify-content:center; }
-    .app{ width:100%; max-width:480px; box-shadow:0 0 0 1px var(--line); min-height:100vh; position:relative; }
-    .bottom-nav{ max-width:480px; margin:0 auto; position:absolute; }
+    .app{ width:100%; max-width:480px; box-shadow:0 0 0 1px var(--line); min-height:100vh; }
+    .drawer, .overlay, .bottom-nav{ max-width:480px; margin:0 auto; }
   }
 </style>
 </head>
@@ -146,27 +353,46 @@
 
   <header class="top">
     <div class="top-row">
-      <div class="brand"><span>Warung</span> Kita
-        <small>Transactions</small>
+      <div class="brand">Transactions
+        <small>Warung Kita POS</small>
       </div>
+      <div class="today-chip" id="todayChip"></div>
+    </div>
+
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by customer name...">
+      <button class="clear-search" id="clearSearch">✕</button>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-status="all">All <span class="count" id="countAll">0</span></button>
+      <button class="tab" data-status="pending">Pending <span class="count" id="countPending">0</span></button>
+      <button class="tab" data-status="paid">Paid <span class="count" id="countPaid">0</span></button>
     </div>
   </header>
 
   <main>
-    <div class="info-banner">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-      <span>Showing transactions for the current day. Resets daily at 03:00 AM.</span>
+    <div class="summary-bar" id="summaryBar">
+      <div class="summary-stat">
+        <div class="summary-value" id="sumCountVal">0</div>
+        <div class="summary-label">Transactions</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-stat">
+        <div class="summary-value accent" id="sumAmountVal">Rp 0</div>
+        <div class="summary-label" id="sumAmountLabel">Total (All)</div>
+      </div>
     </div>
-    
-    <div id="transactionsList"></div>
+    <div id="txnList"></div>
   </main>
 
   <nav class="bottom-nav">
-    <a href="pos.md" class="nav-item">
+    <a href="pos.html" class="nav-item">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5 12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1Z"/></svg>
       <span>Order</span>
     </a>
-    <a href="pTransactions.md" class="nav-item active">
+    <a href="transactions.html" class="nav-item active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
       <span>Transactions</span>
     </a>
@@ -174,130 +400,223 @@
 
 </div>
 
+<div class="overlay" id="overlay"></div>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-head">
+    <div class="drawer-title">Transaction Detail</div>
+    <button class="drawer-close" id="closeDrawer">✕</button>
+  </div>
+  <div class="receipt-edge"></div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-actions" id="drawerActions"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-  // Helper to format currency
+  const TRANSACTIONS = [
+    { id:"TX-1042", customer:"Siti Rahayu", datetime:"2026-07-06T09:12:00", status:"paid",
+      items:[{name:"Cappuccino",qty:1,price:24000},{name:"Croffle",qty:1,price:19000}], method:"QRIS" },
+    { id:"TX-1043", customer:"Budi Santoso", datetime:"2026-07-06T09:34:00", status:"pending",
+      items:[{name:"Nasi Goreng",qty:2,price:28000},{name:"Es Teh Manis",qty:2,price:8000}] },
+    { id:"TX-1044", customer:"Dewi Anggraini", datetime:"2026-07-06T10:02:00", status:"pending",
+      items:[{name:"Mie Ayam",qty:1,price:22000}] },
+    { id:"TX-1045", customer:"Agus Wijaya", datetime:"2026-07-06T10:15:00", status:"paid",
+      items:[{name:"Espresso",qty:1,price:18000},{name:"Choco Lava Cake",qty:1,price:23000},{name:"Mineral Water",qty:1,price:6000}], method:"Cash" },
+    { id:"TX-1046", customer:"Rina Marlina", datetime:"2026-07-06T10:41:00", status:"pending",
+      items:[{name:"Chicken Satay (5pcs)",qty:1,price:30000},{name:"Es Jeruk",qty:1,price:10000}] },
+    { id:"TX-1047", customer:"Hendra Gunawan", datetime:"2026-07-06T11:05:00", status:"paid",
+      items:[{name:"Caramel Latte",qty:2,price:27000}], method:"Debit Card" },
+    { id:"TX-1048", customer:"Putri Lestari", datetime:"2026-07-06T11:20:00", status:"pending",
+      items:[{name:"Nasi Goreng",qty:1,price:28000},{name:"Croffle",qty:1,price:19000},{name:"Es Teh Manis",qty:1,price:8000}] },
+  ];
+
+  let activeStatus = "all";
+  let searchQuery = "";
+  let activeTxnId = null;
+
   const rupiah = n => "Rp " + n.toLocaleString("id-ID");
+  const fmtDateTime = iso => {
+    const d = new Date(iso);
+    const date = d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+    const time = d.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
+    return `${date} · ${time}`;
+  };
+  const txnTotal = t => t.items.reduce((s,i)=> s + i.qty*i.price, 0);
 
-  // Determine the start time of the current "business day" (03:00 cutoff)
-  function getBusinessDayStart() {
-    const now = new Date();
-    const currentHour = now.getHours();
-    
-    // Create a date object for 03:00:00 today
-    const businessStart = new Date(now);
-    businessStart.setHours(3, 0, 0, 0);
+  document.getElementById("todayChip").textContent =
+    new Date().toLocaleDateString("en-GB", { weekday:"short", day:"2-digit", month:"short" });
 
-    // If current time is before 03:00 AM, the business day actually started yesterday at 03:00 AM
-    if (currentHour < 3) {
-      businessStart.setDate(businessStart.getDate() - 1);
-    }
-    
-    return businessStart;
+  const txnList = document.getElementById("txnList");
+  const overlay = document.getElementById("overlay");
+  const drawer = document.getElementById("drawer");
+  const drawerBody = document.getElementById("drawerBody");
+  const drawerActions = document.getElementById("drawerActions");
+  const toast = document.getElementById("toast");
+
+  function updateCounts(){
+    document.getElementById("countAll").textContent = TRANSACTIONS.length;
+    document.getElementById("countPending").textContent = TRANSACTIONS.filter(t=>t.status==="pending").length;
+    document.getElementById("countPaid").textContent = TRANSACTIONS.filter(t=>t.status==="paid").length;
   }
 
-  // Dummy transactions data
-  // We'll generate a few that are "recent" (after 03:00) and one that is "old" (before 03:00) to test the filter
-  function generateDummyData() {
-    const now = new Date();
-    
-    // A recent transaction (1 hour ago)
-    const d1 = new Date(now);
-    d1.setHours(now.getHours() - 1);
-
-    // Another recent transaction (2 hours ago)
-    const d2 = new Date(now);
-    d2.setHours(now.getHours() - 2);
-
-    // An old transaction (yesterday, definitely before today's 03:00 cutoff)
-    const d3 = new Date(now);
-    d3.setDate(d3.getDate() - 1);
-    d3.setHours(14, 0, 0, 0); 
-    
-    // Edge case transaction (e.g. at 2:00 AM today, might be hidden if current time is > 3:00 AM)
-    const d4 = new Date(now);
-    d4.setHours(2, 30, 0, 0);
-
-    return [
-      {
-        id: "TRX-8930",
-        time: d1,
-        items: [{name: "Espresso", qty: 2, price: 36000}, {name: "Croffle", qty: 1, price: 19000}],
-        total: 55000 + 5500 // +10% tax
-      },
-      {
-        id: "TRX-8929",
-        time: d2,
-        items: [{name: "Nasi Goreng", qty: 1, price: 28000}, {name: "Es Teh Manis", qty: 1, price: 8000}],
-        total: 36000 + 3600
-      },
-      {
-        id: "TRX-8928",
-        time: d4,
-        items: [{name: "Mineral Water", qty: 3, price: 18000}],
-        total: 18000 + 1800
-      },
-      {
-        id: "TRX-8910",
-        time: d3,
-        items: [{name: "Cappuccino", qty: 1, price: 24000}],
-        total: 24000 + 2400
-      }
-    ];
+  function filteredList(){
+    return TRANSACTIONS
+      .filter(t => activeStatus === "all" ? true : t.status === activeStatus)
+      .filter(t => t.customer.toLowerCase().includes(searchQuery.toLowerCase()) || t.id.toLowerCase().includes(searchQuery.toLowerCase()))
+      .sort((a,b)=> new Date(b.datetime) - new Date(a.datetime));
   }
 
-  function renderTransactions() {
-    const list = document.getElementById("transactionsList");
-    const allData = generateDummyData();
-    const businessDayStart = getBusinessDayStart();
+  function itemsSummary(items){
+    const names = items.map(i => i.qty > 1 ? `${i.name} x${i.qty}` : i.name);
+    if(names.length <= 2) return names.join(", ");
+    return `${names.slice(0,2).join(", ")} <span class="more">+${names.length-2} more</span>`;
+  }
 
-    // Filter to only show transactions that occurred ON or AFTER the calculated 03:00 cutoff
-    const filteredData = allData.filter(tx => tx.time >= businessDayStart);
+  function updateSummary(list){
+    const count = list.length;
+    const amount = list.reduce((s, t) => s + txnTotal(t), 0);
+    const labels = { all: "Total (All)", pending: "Total Unpaid", paid: "Total Collected" };
+    const valueEl = document.getElementById("sumAmountVal");
 
-    // Sort newest first
-    filteredData.sort((a, b) => b.time - a.time);
+    document.getElementById("sumCountVal").textContent = count;
+    valueEl.textContent = rupiah(amount);
+    document.getElementById("sumAmountLabel").textContent = labels[activeStatus];
+    valueEl.classList.toggle("warn", activeStatus === "pending");
+    valueEl.classList.toggle("accent", activeStatus !== "pending");
+  }
 
-    if (filteredData.length === 0) {
-      list.innerHTML = `<div class="empty-state">No transactions yet for today's shift.</div>`;
+  function renderList(){
+    updateCounts();
+    const list = filteredList();
+    updateSummary(list);
+
+    if(list.length === 0){
+      txnList.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🧾</div>
+          <div class="msg">No transactions match your search.</div>
+        </div>`;
       return;
     }
 
-    let html = "";
-    filteredData.forEach(tx => {
-      // Format time
-      const timeStr = tx.time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      const dateStr = tx.time.toLocaleDateString();
-
-      let itemsHtml = "";
-      tx.items.forEach(item => {
-        itemsHtml += `
-          <div class="tx-item-row">
-            <span>${item.qty}x ${item.name}</span>
-            <span style="color:var(--ink-soft)">${rupiah(item.price)}</span>
-          </div>`;
-      });
-
-      html += `
-        <div class="tx-card">
-          <div class="tx-head">
-            <span class="tx-id">${tx.id}</span>
-            <span class="tx-time">${dateStr} • ${timeStr}</span>
+    txnList.innerHTML = list.map(t => `
+      <div class="txn-card">
+        <div class="txn-head">
+          <div>
+            <div class="txn-customer">${t.customer}</div>
+            <div class="txn-meta">${t.id} · ${fmtDateTime(t.datetime)}</div>
           </div>
-          <div class="tx-items">
-            ${itemsHtml}
-          </div>
-          <div class="tx-total-row">
-            <span class="tx-total-label">Total</span>
-            <span class="tx-total-val">${rupiah(tx.total)}</span>
+          <span class="status-badge status-${t.status}">${t.status}</span>
+        </div>
+        <div class="txn-items">${itemsSummary(t.items)}</div>
+        <div class="txn-foot">
+          <div class="txn-total"><small>Total</small>${rupiah(txnTotal(t))}</div>
+          <div class="txn-actions">
+            <button class="btn-sm btn-view" data-view="${t.id}">View</button>
+            ${t.status === "pending" ? `<button class="btn-sm btn-pay" data-pay="${t.id}">Pay</button>` : ``}
           </div>
         </div>
-      `;
-    });
-
-    list.innerHTML = html;
+      </div>
+    `).join("");
   }
 
-  // Initialize
-  renderTransactions();
+  function openDetail(id){
+    const t = TRANSACTIONS.find(tx => tx.id === id);
+    if(!t) return;
+    activeTxnId = id;
+    const total = txnTotal(t);
+
+    drawerBody.innerHTML = `
+      <div class="detail-row"><span>Order ID</span><span>${t.id}</span></div>
+      <div class="detail-row"><span>Customer</span><span>${t.customer}</span></div>
+      <div class="detail-row"><span>Date &amp; time</span><span>${fmtDateTime(t.datetime)}</span></div>
+      <div class="detail-row"><span>Payment method</span><span>${t.method || "—"}</span></div>
+      <div class="detail-row detail-status"><span>Status</span><span class="status-badge status-${t.status}">${t.status}</span></div>
+
+      <div class="items-block">
+        <div class="items-block-label">Items ordered</div>
+        ${t.items.map(i => `
+          <div class="detail-item-row">
+            <div class="detail-item-name">${i.name}</div>
+            <div class="detail-item-qty">x${i.qty}</div>
+            <div class="detail-item-price">${rupiah(i.qty*i.price)}</div>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="drawer-summary">
+        <div class="summary-line"><span>Subtotal</span><span>${rupiah(total)}</span></div>
+        <div class="summary-total"><span>Total</span><span class="amt">${rupiah(total)}</span></div>
+      </div>
+    `;
+
+    drawerActions.innerHTML = t.status === "pending"
+      ? `<button class="btn btn-close-only" id="drawerCloseBtn">Close</button>
+         <button class="btn btn-pay-full" id="drawerPayBtn">Pay now</button>`
+      : `<button class="btn btn-close-only" id="drawerCloseBtn" style="flex:1;">Close</button>`;
+
+    document.getElementById("drawerCloseBtn").addEventListener("click", closeDrawer);
+    const payBtn = document.getElementById("drawerPayBtn");
+    if(payBtn) payBtn.addEventListener("click", () => markPaid(t.id, true));
+
+    openDrawer();
+  }
+
+  function markPaid(id, fromDrawer){
+    const t = TRANSACTIONS.find(tx => tx.id === id);
+    if(!t || t.status === "paid") return;
+    t.status = "paid";
+    t.method = t.method || "Cash";
+    showToast(`${t.customer}'s order marked as paid ✓`);
+    renderList();
+    if(fromDrawer) closeDrawer();
+  }
+
+  function openDrawer(){ drawer.classList.add("show"); overlay.classList.add("show"); }
+  function closeDrawer(){ drawer.classList.remove("show"); overlay.classList.remove("show"); activeTxnId = null; }
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    setTimeout(()=> toast.classList.remove("show"), 1800);
+  }
+
+  document.getElementById("tabs").addEventListener("click", e=>{
+    const btn = e.target.closest(".tab");
+    if(!btn) return;
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    activeStatus = btn.dataset.status;
+    renderList();
+  });
+
+  const searchInput = document.getElementById("searchInput");
+  const clearSearch = document.getElementById("clearSearch");
+  searchInput.addEventListener("input", e=>{
+    searchQuery = e.target.value;
+    clearSearch.style.display = searchQuery ? "block" : "none";
+    renderList();
+  });
+  clearSearch.addEventListener("click", ()=>{
+    searchInput.value = "";
+    searchQuery = "";
+    clearSearch.style.display = "none";
+    renderList();
+  });
+
+  txnList.addEventListener("click", e=>{
+    const viewBtn = e.target.closest("[data-view]");
+    const payBtn = e.target.closest("[data-pay]");
+    if(viewBtn) openDetail(viewBtn.dataset.view);
+    if(payBtn) markPaid(payBtn.dataset.pay, false);
+  });
+
+  document.getElementById("closeDrawer").addEventListener("click", closeDrawer);
+  overlay.addEventListener("click", closeDrawer);
+
+  renderList();
 </script>
 
 </body>
