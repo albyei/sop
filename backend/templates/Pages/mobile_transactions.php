@@ -471,6 +471,10 @@ foreach ($transactions as $t) {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h9l3 3v17H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>
       <span>Transactions</span>
     </a>
+    <a href="<?= $this->Url->build(['controller' => 'Pages', 'action' => 'mobileAccount']) ?>" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>Account</span>
+    </a>
   </nav>
 
 </div>
