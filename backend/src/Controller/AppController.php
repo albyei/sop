@@ -53,11 +53,14 @@ class AppController extends Controller
 
         // Global multi-tenancy filter (ponytail style)
         EventManager::instance()->on('Model.beforeFind', function ($event, $query, $options, $primary) {
+            if (!$primary) {
+                return;
+            }
             $table = $event->getSubject();
             if ($table->hasField('branch_id')) {
                 $identity = $this->Authentication->getIdentity();
-                if ($identity && $identity->role !== 'superadmin') {
-                    $query->where([$table->aliasField('branch_id') => $identity->branch_id]);
+                if ($identity && $identity->get('role') !== 'admin') {
+                    $query->where([$table->aliasField('branch_id') => $identity->get('branch_id')]);
                 }
             }
         });
@@ -66,8 +69,8 @@ class AppController extends Controller
             $table = $event->getSubject();
             if ($table->hasField('branch_id')) {
                 $identity = $this->Authentication->getIdentity();
-                if ($identity && $identity->role !== 'superadmin' && empty($entity->branch_id)) {
-                    $entity->branch_id = $identity->branch_id;
+                if ($identity && $identity->get('role') !== 'admin' && empty($entity->branch_id)) {
+                    $entity->branch_id = $identity->get('branch_id');
                 }
             }
         });
