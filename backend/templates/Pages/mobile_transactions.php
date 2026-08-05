@@ -563,14 +563,14 @@ foreach ($transactions as $t) {
   const rupiah = n => "Rp " + n.toLocaleString("id-ID");
   const fmtDateTime = iso => {
     const d = new Date(iso);
-    const date = d.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
-    const time = d.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" });
+    const date = d.toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" });
+    const time = d.toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit" });
     return `${date} · ${time}`;
   };
   const txnTotal = t => t.items.reduce((s,i)=> s + i.qty*i.price, 0);
 
   document.getElementById("todayChip").textContent =
-    new Date().toLocaleDateString("en-GB", { weekday:"short", day:"2-digit", month:"short" });
+    new Date().toLocaleDateString("id-ID", { weekday:"short", day:"2-digit", month:"short" });
 
   const txnList = document.getElementById("txnList");
   const overlay = document.getElementById("overlay");
