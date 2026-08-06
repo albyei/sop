@@ -215,13 +215,13 @@ $this->disableAutoLayout();
   .overlay.show{ opacity:1; pointer-events:auto; }
 
   .drawer{
-    position:fixed; left:0; right:0; bottom:0; z-index:40;
+    position:fixed; left:0; right:0; z-index:40;
+    bottom: var(--vv-bottom, 0px);
     background:var(--card);
     border-top-left-radius:20px; border-top-right-radius:20px;
-    /* max-height:82vh; */
-    max-height: calc(100dvh - 80px);
+    max-height: calc(var(--vv-height, 100vh) * 0.82);
     transform:translateY(100%);
-    transition:transform .25s cubic-bezier(.32,.72,0,1);
+    transition:transform .25s cubic-bezier(.32,.72,0,1), bottom 0s;
     display:flex; flex-direction:column;
     padding-bottom: var(--safe-bottom);
   }
@@ -733,6 +733,29 @@ $this->disableAutoLayout();
               }
           }
       });
+  }
+
+  // --- VisualViewport Fix for Android Fullscreen Keyboard ---
+  if (window.visualViewport) {
+      function updateVV() {
+          const vv = window.visualViewport;
+          // Set exact viewport height, useful instead of vh
+          document.documentElement.style.setProperty('--vv-height', `${vv.height}px`);
+          
+          // Calculate if keyboard pushed the viewport up
+          const bottomOffset = window.innerHeight - (vv.height + vv.offsetTop);
+          
+          // In Android fullscreen, offset can sometimes go negative or act weird, clamp to 0
+          document.documentElement.style.setProperty('--vv-bottom', `${Math.max(0, bottomOffset)}px`);
+          
+          // Scroll slightly to ensure input is visible if it is hidden
+          if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+              document.activeElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          }
+      }
+      window.visualViewport.addEventListener('resize', updateVV);
+      window.visualViewport.addEventListener('scroll', updateVV);
+      updateVV(); // init
   }
 
   async function saveTransaction(status, customPaidAmount = null, customChangeAmount = null) {
