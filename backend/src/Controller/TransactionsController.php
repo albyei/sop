@@ -85,6 +85,10 @@ class TransactionsController extends AppController
                 }
             }
 
+            // Default values for strict MySQL modes in production
+            $data['paid_amount'] = isset($data['paid_amount']) ? (int)$data['paid_amount'] : 0;
+            $data['change_amount'] = isset($data['change_amount']) ? (int)$data['change_amount'] : 0;
+
             // Recalculate prices and totals to prevent client-side tampering
             if (!empty($data['transaction_items']) && is_array($data['transaction_items'])) {
                 $menusTable = $this->fetchTable('Menus');
