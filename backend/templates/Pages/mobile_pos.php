@@ -5,7 +5,9 @@ $this->disableAutoLayout();
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta 
+    name="viewport" 
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Albyei — POS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -216,7 +218,8 @@ $this->disableAutoLayout();
     position:fixed; left:0; right:0; bottom:0; z-index:40;
     background:var(--card);
     border-top-left-radius:20px; border-top-right-radius:20px;
-    max-height:82vh;
+    /* max-height:82vh; */
+    max-height: calc(100dvh - 80px);
     transform:translateY(100%);
     transition:transform .25s cubic-bezier(.32,.72,0,1);
     display:flex; flex-direction:column;
@@ -443,7 +446,14 @@ $this->disableAutoLayout();
   <div class="drawer-summary" id="drawerSummary" style="display:none;">
     <!-- Customer input needed for real transactions -->
     <div style="margin-bottom:12px;">
-      <input type="text" id="customerName" placeholder="Customer Name (Optional)" style="width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:8px; font-family:'Inter'; font-size:0.95rem;" />
+        <input
+        type="text"
+        id="customerName"
+        placeholder="Customer Name (Optional)"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        style="width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:8px; font-family:'Inter'; font-size:0.95rem;" />
     </div>
     <div class="summary-line"><span>Subtotal</span><span id="sumSubtotal">Rp 0</span></div>
     <!-- Removed tax line as per usual POS setups if not needed, but keep it if requested. Setting tax to 0 for simplicity -->
@@ -527,7 +537,25 @@ $this->disableAutoLayout();
   const cartBar = document.getElementById("cartBar");
   const barCount = document.getElementById("barCount");
   const barTotal = document.getElementById("barTotal");
+
   const drawer = document.getElementById("drawer");
+
+  if (window.visualViewport) {
+
+    window.visualViewport.addEventListener("resize", () => {
+
+        const keyboardHeight =
+            window.innerHeight -
+            window.visualViewport.height;
+
+        drawer.style.bottom =
+            keyboardHeight > 0
+                ? keyboardHeight + "px"
+                : "0px";
+
+    });
+
+  }
   const overlay = document.getElementById("overlay");
   const drawerBody = document.getElementById("drawerBody");
   const drawerSummary = document.getElementById("drawerSummary");
