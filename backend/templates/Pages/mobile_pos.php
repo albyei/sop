@@ -6,7 +6,7 @@ $this->disableAutoLayout();
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Warung Kita — POS</title>
+<title>Albyei — POS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
@@ -438,7 +438,7 @@ $this->disableAutoLayout();
   <div class="drawer-summary" id="drawerSummary" style="display:none;">
     <!-- Customer input needed for real transactions -->
     <div style="margin-bottom:12px;">
-      <input type="text" id="customerName" placeholder="Customer Name (Optional)" style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:6px; font-family:'Inter'; font-size:0.85rem;" />
+      <input type="text" id="customerName" placeholder="Customer Name (Optional)" style="width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:8px; font-family:'Inter'; font-size:0.95rem;" />
     </div>
     <div class="summary-line"><span>Subtotal</span><span id="sumSubtotal">Rp 0</span></div>
     <!-- Removed tax line as per usual POS setups if not needed, but keep it if requested. Setting tax to 0 for simplicity -->
@@ -498,6 +498,7 @@ $this->disableAutoLayout();
 
   const API_BASE = window.POS_CONFIG.apiBase;
 
+  //asumsi penyebab error
   async function api(path, method = 'GET', body = null) {
       const csrf = window.POS_CONFIG.csrfToken;
       const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
@@ -538,6 +539,11 @@ $this->disableAutoLayout();
       if (c.includes("MIXED JUICE")) return "🍹";
       if (c.includes("JUICE") && !c.includes("MIXED")) return "🍊";
       if (c.includes("DRINK")) return "🥤";
+      if (c.includes("ORIGINAL JUS")) return "🍷";
+      if (c.includes("SUNDUKAN")) return "🍡";
+      if (c.includes("KETAN")) return "🍚";
+      if (c.includes("MINUMAN PANAS")) return "🍵";
+      if (c.includes("MINUMAN DINGIN")) return "🍹";
       return "🍽️";
   }
 
@@ -696,7 +702,8 @@ $this->disableAutoLayout();
           status: status,
           transaction_items: transactionItems
       };
-      
+    
+      //asumsi penyebab error
       if (status === 'paid') {
           payload.paid_amount = customPaidAmount !== null ? customPaidAmount : total; 
           payload.change_amount = customChangeAmount !== null ? customChangeAmount : 0;
@@ -707,6 +714,7 @@ $this->disableAutoLayout();
       
       const res = await api('transactions/add.json', 'POST', payload);
       
+      //asumsi penyebab error transaction
       if (res && res.success) {
           showToast(status === 'paid' ? "Payment confirmed ✓" : "Order saved ✓");
           setTimeout(()=>{
@@ -800,7 +808,7 @@ $this->disableAutoLayout();
     }
   }
 
-  // Finalize payment 
+  // Finalize payment dan asumsi penyebab error
   confirmPaymentBtn.addEventListener("click", () => {
      saveTransaction('paid', amountReceived, amountReceived - currentTotalDue);
      closePaymentDrawer();

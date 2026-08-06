@@ -4,6 +4,7 @@ $identity = $this->request->getAttribute('identity');
 $name = $identity ? ($identity->get('username') ?? 'User') : 'Guest';
 $role = $identity ? ($identity->get('role') ?? 'Staff') : 'Staff';
 $email = $identity ? ($identity->get('email') ?? '') : '';
+$branchName = $identity && $identity->get('branch') ? ($identity->get('branch')['name'] ?? 'Warung Kita') : 'Warung Kita';
 $initials = strtoupper(substr($name, 0, 2));
 ?>
 <!DOCTYPE html>
@@ -242,7 +243,7 @@ $initials = strtoupper(substr($name, 0, 2));
     <div class="info-card">
       <div class="info-card-label">Current session</div>
       <div class="info-row"><span class="k">Logged in</span><span class="v mono" id="loginTime">Yes</span></div>
-      <div class="info-row"><span class="k">Store</span><span class="v">Warung Kita</span></div>
+      <div class="info-row"><span class="k">Store</span><span class="v"><?= h($branchName) ?></span></div>
     </div>
 
     <div class="menu-card">
@@ -253,7 +254,7 @@ $initials = strtoupper(substr($name, 0, 2));
       </div>
     </div>
 
-    <div class="app-version">Warung Kita POS · v1.0</div>
+    <div class="app-version">Albi Ariza Syafiq POS · v1.1</div>
   </main>
 
   <nav class="bottom-nav">
