@@ -20,6 +20,11 @@ class MenusController extends AppController
         $query = $this->Menus->find()
             ->contain(['Branches']);
 
+        $identity = $this->Authentication->getIdentity();
+        if ($identity && $identity->branch_id) {
+            $query->where(['Menus.branch_id' => $identity->branch_id]);
+        }
+
         if ($this->request->is('json')) {
             // API request from POS
             $query->where(['Menus.is_active' => true]);
@@ -43,6 +48,9 @@ class MenusController extends AppController
                 ->whereNotNull('category')
                 ->where(['category !=' => ''])
                 ->distinct(['category']);
+            if ($identity && $identity->branch_id) {
+                $catQuery->where(['Menus.branch_id' => $identity->branch_id]);
+            }
             $categories = $catQuery->all()->extract('category')->toArray();
             
             $paging = $this->request->getAttribute('paging');

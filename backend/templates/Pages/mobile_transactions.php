@@ -1,11 +1,18 @@
 <?php
 $this->disableAutoLayout();
 $TransactionsTable = \Cake\ORM\TableRegistry::getTableLocator()->get('Transactions');
-$transactions = $TransactionsTable->find()
+$identity = $this->request->getAttribute('identity');
+$branchId = $identity ? $identity->get('branch_id') : null;
+
+$query = $TransactionsTable->find()
     ->contain(['TransactionItems' => ['Menus']])
     ->order(['Transactions.created' => 'DESC'])
-    ->limit(200)
-    ->all();
+    ->limit(200);
+
+if ($branchId) {
+    $query->where(['Transactions.branch_id' => $branchId]);
+}
+$transactions = $query->all();
 
 $transactionsData = [];
 foreach ($transactions as $t) {
