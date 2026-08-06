@@ -377,11 +377,16 @@ $this->disableAutoLayout();
       <div class="brand"><span>Warung</span> Kita
         <small>Point of Sale</small>
       </div>
-      <button class="cart-chip" id="peekCartBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
-        Cart
-        <span class="cart-badge" id="badgeCount">0</span>
-      </button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="cart-chip" id="fullscreenBtn" style="padding: 9px; min-width:38px; justify-content:center;" title="Toggle Fullscreen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px; height:18px;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+        <button class="cart-chip" id="peekCartBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+          Cart
+          <span class="cart-badge" id="badgeCount">0</span>
+        </button>
+      </div>
     </div>
 
     <div class="filter-scroll" id="filterScroll">
@@ -686,6 +691,21 @@ $this->disableAutoLayout();
   cartBar.addEventListener("click", openDrawer);
   document.getElementById("closeDrawer").addEventListener("click", closeDrawer);
   overlay.addEventListener("click", closeDrawer);
+
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
+  if (fullscreenBtn) {
+      fullscreenBtn.addEventListener("click", () => {
+          if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(err => {
+                  showToast("Gagal mengaktifkan fullscreen: " + err.message, true);
+              });
+          } else {
+              if (document.exitFullscreen) {
+                  document.exitFullscreen();
+              }
+          }
+      });
+  }
 
   async function saveTransaction(status, customPaidAmount = null, customChangeAmount = null) {
       if (Object.keys(cart).length === 0) return showToast('Cart is empty', true);
