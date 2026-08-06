@@ -247,6 +247,11 @@ $initials = strtoupper(substr($name, 0, 2));
     </div>
 
     <div class="menu-card">
+      <div class="menu-link" id="fullscreenToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        Toggle Fullscreen
+        <span class="chev">›</span>
+      </div>
       <div class="menu-link danger" id="logoutTrigger">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
         Log out
@@ -313,6 +318,21 @@ $initials = strtoupper(substr($name, 0, 2));
   document.getElementById("logoutTrigger").addEventListener("click", openLogoutDrawer);
   document.getElementById("cancelLogout").addEventListener("click", closeLogoutDrawer);
   overlay.addEventListener("click", closeLogoutDrawer);
+
+  const fullscreenToggle = document.getElementById("fullscreenToggle");
+  if (fullscreenToggle) {
+      fullscreenToggle.addEventListener("click", () => {
+          if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(err => {
+                  showToast("Gagal mengaktifkan fullscreen: " + err.message);
+              });
+          } else {
+              if (document.exitFullscreen) {
+                  document.exitFullscreen();
+              }
+          }
+      });
+  }
 
   document.getElementById("confirmLogout").addEventListener("click", ()=>{
     showToast("Logging out…");
