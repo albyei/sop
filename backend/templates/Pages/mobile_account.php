@@ -247,6 +247,13 @@ $initials = strtoupper(substr($name, 0, 2));
     </div>
 
     <div class="menu-card">
+<?php if ($identity && $identity->get('role') === 'admin'): ?>
+      <a href="<?= $this->Url->build('/admin') ?>" class="menu-link" style="text-decoration:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Admin Dashboard
+        <span class="chev">›</span>
+      </a>
+<?php endif; ?>
       <div class="menu-link" id="fullscreenToggle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         Toggle Fullscreen
