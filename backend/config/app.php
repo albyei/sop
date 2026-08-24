@@ -418,6 +418,12 @@ return [
      */
     'Session' => [
         'defaults' => 'php',
+        'ini' => [
+        'session.cookie_httponly' => true,
+        'session.cookie_secure' => true, // Aktifkan jika server menggunakan HTTPS
+        'session.cookie_samesite' => 'Lax',
+        'session.use_strict_mode' => true,
+        ],
     ],
 
     /**
