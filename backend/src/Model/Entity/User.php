@@ -36,10 +36,10 @@ class User extends Entity
         'username' => true,
         'password' => true,
         'role' => true,
-        'created' => true,
-        'modified' => true,
-        'branch' => true,
-        'transactions' => true,
+        'created' => false,
+        'modified' => false,
+        'branch' => false,
+        'transactions' => false,
     ];
 
     /**
