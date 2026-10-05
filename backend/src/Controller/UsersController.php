@@ -19,7 +19,7 @@ class UsersController extends AppController
     {
         parent::initialize();
 
-        $this->Authentication->allowUnauthenticated(['login', 'add']);
+        $this->Authentication->allowUnauthenticated(['login', 'add', 'loginOtp', 'requestOtp', 'verifyOtp']);
     }
 
     /**
@@ -134,6 +134,74 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $this->Flash->error(__('Invalid username or password'));
         }
+    }
+
+    public function loginOtp()
+    {
+        $this->request->allowMethod(['get']);
+        // Renders templates/Users/login_otp.php
+    }
+
+    public function requestOtp()
+    {
+        $this->request->allowMethod(['post']);
+        $email = $this->request->getData('email');
+
+        if (empty($email)) {
+            $this->Flash->error(__('Please enter your email.'));
+            return $this->redirect(['action' => 'loginOtp']);
+        }
+
+        $otpService = new \App\Service\OtpService();
+        $result = $otpService->generateAndSendOtp($email);
+
+        if (!$result['success']) {
+            $this->Flash->error(__($result['message']));
+            return $this->redirect(['action' => 'loginOtp']);
+        }
+
+        $this->request->getSession()->write('Otp.email', $email);
+        $this->Flash->success(__($result['message']));
+        return $this->redirect(['action' => 'verifyOtp']);
+    }
+
+    public function verifyOtp()
+    {
+        $this->request->allowMethod(['get', 'post']);
+        $email = $this->request->getSession()->read('Otp.email');
+
+        if (!$email) {
+            $this->Flash->error(__('No active OTP session found. Please request again.'));
+            return $this->redirect(['action' => 'loginOtp']);
+        }
+
+        if ($this->request->is('post')) {
+            $otp = $this->request->getData('otp');
+            $otpService = new \App\Service\OtpService();
+            $result = $otpService->verifyOtp($email, $otp);
+
+            if ($result['success']) {
+                $user = $result['user'];
+                
+                // Clear session
+                $this->request->getSession()->delete('Otp.email');
+                
+                // Programmatic Login using CakePHP Authentication
+                $this->Authentication->setIdentity($user);
+                $this->Flash->success(__($result['message']));
+
+                $target = $this->Authentication->getLoginRedirect() ?? [
+                    'controller' => $user->role === 'admin' ? 'Transactions' : 'Pages',
+                    'action' => $user->role === 'admin' ? 'index' : 'pos'
+                ];
+                
+                return $this->redirect($target);
+            } else {
+                $this->Flash->error(__($result['message']));
+            }
+        }
+        
+        $this->set(compact('email'));
     }
 
     /**

@@ -35,6 +35,8 @@ class User extends Entity
         'branch_id' => true,
         'username' => true,
         'password' => true,
+        'email' => true,
+        'is_active' => true,
         'role' => true,
         'created' => false,
         'modified' => false,

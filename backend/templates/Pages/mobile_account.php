@@ -330,7 +330,7 @@ $initials = strtoupper(substr($name, 0, 2));
   if (fullscreenToggle) {
       fullscreenToggle.addEventListener("click", () => {
           if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen().catch(err => {
+              document.documentElement.  .catch(err => {
                   showToast("Gagal mengaktifkan fullscreen: " + err.message);
               });
           } else {

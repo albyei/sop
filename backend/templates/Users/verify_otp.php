@@ -1,6 +1,7 @@
 <?php
 /**
  * @var \App\View\AppView $this
+ * @var string $email
  */
 ?>
 <style>
@@ -62,16 +63,12 @@
         padding: 12px 14px 12px 38px;
         font-family: 'Inter', sans-serif; font-size: 0.92rem; color: var(--ink);
         outline: none; box-sizing: border-box;
+        letter-spacing: 4px;
+        font-weight: 700;
+        text-align: center;
     }
     .mobile-login-wrap input.field-input:focus { border-color: var(--green); background: var(--card); }
-    .mobile-login-wrap input.field-input::placeholder { color: var(--ink-soft); }
-    
-    .mobile-login-wrap .toggle-visibility {
-        position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-        border: none; background: transparent;
-        color: var(--ink-soft); font-weight: 600; font-size: 0.72rem;
-        padding: 6px 8px; cursor: pointer;
-    }
+    .mobile-login-wrap input.field-input::placeholder { color: var(--ink-soft); letter-spacing: 2px; font-weight: normal; }
     
     .mobile-login-wrap .login-btn-mobile {
         width: 100%; background: var(--green); color: #fff;
@@ -83,14 +80,14 @@
     }
     .mobile-login-wrap .login-btn-mobile:active { transform: scale(0.98); }
     
-    .mobile-login-wrap .demo-note {
-        text-align: center; font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.72rem; color: var(--ink-soft); margin-top: 18px;
-        padding: 10px 12px; background: var(--paper-dim); border-radius: 10px;
-    }
     .mobile-login-wrap .footer-note {
         text-align: center; font-size: 0.72rem; color: var(--ink-soft); margin-top: 20px;
     }
+
+    .resend-box { margin-top: 20px; text-align: center; font-size: 0.85rem; color: var(--ink-soft); }
+    .resend-box form { display: inline; }
+    .resend-btn { background: none; border: none; color: var(--green); font-weight: 600; cursor: pointer; text-decoration: none; padding: 0; font-family: 'Inter', sans-serif;}
+    .resend-btn:disabled { color: var(--ink-soft); cursor: not-allowed; }
 </style>
 
 <div class="mobile-login-wrap">
@@ -101,49 +98,57 @@
     </div>
 
     <div class="login-card">
-        <div class="login-heading">Welcome back</div>
-        <div class="login-subheading">Log in with your staff account to continue.</div>
+        <div class="login-heading">Verification Code</div>
+        <div class="login-subheading">We have sent a 6-digit OTP code to <strong><?= h($email) ?></strong>.</div>
 
-        <?= $this->Form->create(null, ['id' => 'mobileLoginForm']) ?>
-        <div class="field" id="usernameField">
-            <label for="mobile-username">Username or Employee ID</label>
+        <?= $this->Form->create(null, ['url' => ['action' => 'verifyOtp'], 'id' => 'verifyForm']) ?>
+        <div class="field" id="otpField">
+            <label for="mobile-otp">Enter OTP Code</label>
             <div class="field-input-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                <?= $this->Form->text('username', ['id' => 'mobile-username', 'class' => 'field-input', 'required' => true, 'placeholder' => 'e.g. citra.suryani']) ?>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <?= $this->Form->text('otp', ['id' => 'mobile-otp', 'class' => 'field-input', 'required' => true, 'placeholder' => '• • • • • •', 'maxlength' => 6, 'autocomplete' => 'one-time-code', 'inputmode' => 'numeric', 'pattern' => '[0-9]*']) ?>
             </div>
         </div>
 
-        <div class="field" id="passwordField">
-            <label for="mobile-password">Password</label>
-            <div class="field-input-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-                <?= $this->Form->password('password', ['id' => 'mobile-password', 'class' => 'field-input', 'required' => true, 'placeholder' => 'Enter your password']) ?>
-                <button type="button" class="toggle-visibility" id="togglePw">SHOW</button>
-            </div>
+        <button type="submit" class="login-btn-mobile">Verifikasi</button>
+        <?= $this->Form->end() ?>
+
+        <div class="resend-box" id="resendBox">
+            Kirim ulang OTP dalam <span id="countdown">45</span> detik
+        </div>
+        
+        <div class="resend-box" id="resendFormBox" style="display: none;">
+            <?= $this->Form->create(null, ['url' => ['action' => 'requestOtp']]) ?>
+            <?= $this->Form->hidden('email', ['value' => $email]) ?>
+            Belum menerima kode? <button type="submit" class="resend-btn">Kirim Ulang</button>
+            <?= $this->Form->end() ?>
         </div>
 
-        <button type="submit" class="login-btn-mobile" id="mobileLoginBtn">Log In</button>
         <div style="margin-top: 16px; text-align: center;">
-            <a href="<?= $this->Url->build(['action' => 'loginOtp']) ?>" style="font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--green); text-decoration: none;">
-                Log In with OTP (Email)
+            <a href="<?= $this->Url->build(['action' => 'loginOtp']) ?>" style="font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); text-decoration: none;">
+                Ganti Email
             </a>
         </div>
-        <?= $this->Form->end() ?>
     </div>
 
     <div class="footer-note">Warung Kita POS &middot; v1.0</div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const togglePw = document.getElementById("togglePw");
-        if (togglePw) {
-            togglePw.addEventListener("click", () => {
-                const passwordInput = document.getElementById("mobile-password");
-                const isPw = passwordInput.type === "password";
-                passwordInput.type = isPw ? "text" : "password";
-                togglePw.textContent = isPw ? "HIDE" : "SHOW";
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    let timeLeft = 45; // Resend cooldown display
+    const countdownEl = document.getElementById('countdown');
+    const resendBox = document.getElementById('resendBox');
+    const resendFormBox = document.getElementById('resendFormBox');
+
+    const timer = setInterval(() => {
+        timeLeft--;
+        if(countdownEl) countdownEl.textContent = timeLeft;
+        if(timeLeft <= 0) {
+            clearInterval(timer);
+            if(resendBox) resendBox.style.display = 'none';
+            if(resendFormBox) resendFormBox.style.display = 'block';
         }
-    });
+    }, 1000);
+});
 </script>

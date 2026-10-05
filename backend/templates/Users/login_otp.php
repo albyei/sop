@@ -66,13 +66,6 @@
     .mobile-login-wrap input.field-input:focus { border-color: var(--green); background: var(--card); }
     .mobile-login-wrap input.field-input::placeholder { color: var(--ink-soft); }
     
-    .mobile-login-wrap .toggle-visibility {
-        position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-        border: none; background: transparent;
-        color: var(--ink-soft); font-weight: 600; font-size: 0.72rem;
-        padding: 6px 8px; cursor: pointer;
-    }
-    
     .mobile-login-wrap .login-btn-mobile {
         width: 100%; background: var(--green); color: #fff;
         border: none; border-radius: 999px;
@@ -83,11 +76,6 @@
     }
     .mobile-login-wrap .login-btn-mobile:active { transform: scale(0.98); }
     
-    .mobile-login-wrap .demo-note {
-        text-align: center; font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.72rem; color: var(--ink-soft); margin-top: 18px;
-        padding: 10px 12px; background: var(--paper-dim); border-radius: 10px;
-    }
     .mobile-login-wrap .footer-note {
         text-align: center; font-size: 0.72rem; color: var(--ink-soft); margin-top: 20px;
     }
@@ -101,31 +89,23 @@
     </div>
 
     <div class="login-card">
-        <div class="login-heading">Welcome back</div>
-        <div class="login-subheading">Log in with your staff account to continue.</div>
+        <div class="login-heading">Login with OTP</div>
+        <div class="login-subheading">Enter your email address to receive a one-time verification code.</div>
 
-        <?= $this->Form->create(null, ['id' => 'mobileLoginForm']) ?>
-        <div class="field" id="usernameField">
-            <label for="mobile-username">Username or Employee ID</label>
+        <?= $this->Form->create(null, ['url' => ['action' => 'requestOtp'], 'id' => 'mobileLoginForm']) ?>
+        <div class="field" id="emailField">
+            <label for="mobile-email">Email Address</label>
             <div class="field-input-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-                <?= $this->Form->text('username', ['id' => 'mobile-username', 'class' => 'field-input', 'required' => true, 'placeholder' => 'e.g. citra.suryani']) ?>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <?= $this->Form->text('email', ['id' => 'mobile-email', 'type' => 'email', 'class' => 'field-input', 'required' => true, 'placeholder' => 'e.g. citra@example.com']) ?>
             </div>
         </div>
 
-        <div class="field" id="passwordField">
-            <label for="mobile-password">Password</label>
-            <div class="field-input-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-                <?= $this->Form->password('password', ['id' => 'mobile-password', 'class' => 'field-input', 'required' => true, 'placeholder' => 'Enter your password']) ?>
-                <button type="button" class="toggle-visibility" id="togglePw">SHOW</button>
-            </div>
-        </div>
-
-        <button type="submit" class="login-btn-mobile" id="mobileLoginBtn">Log In</button>
+        <button type="submit" class="login-btn-mobile">Kirim OTP</button>
+        
         <div style="margin-top: 16px; text-align: center;">
-            <a href="<?= $this->Url->build(['action' => 'loginOtp']) ?>" style="font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--green); text-decoration: none;">
-                Log In with OTP (Email)
+            <a href="<?= $this->Url->build(['action' => 'login']) ?>" style="font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); text-decoration: none;">
+                Back to Password Login
             </a>
         </div>
         <?= $this->Form->end() ?>
@@ -133,17 +113,3 @@
 
     <div class="footer-note">Warung Kita POS &middot; v1.0</div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const togglePw = document.getElementById("togglePw");
-        if (togglePw) {
-            togglePw.addEventListener("click", () => {
-                const passwordInput = document.getElementById("mobile-password");
-                const isPw = passwordInput.type === "password";
-                passwordInput.type = isPw ? "text" : "password";
-                togglePw.textContent = isPw ? "HIDE" : "SHOW";
-            });
-        }
-    });
-</script>

@@ -86,6 +86,14 @@ class UsersTable extends Table
             ->scalar('role')
             ->notEmptyString('role');
 
+        $validator
+            ->email('email')
+            ->allowEmptyString('email');
+
+        $validator
+            ->boolean('is_active')
+            ->notEmptyString('is_active');
+
         return $validator;
     }
 
@@ -99,6 +107,7 @@ class UsersTable extends Table
     public function buildRules(RulesChecker $rules): RulesChecker
     {
         $rules->add($rules->isUnique(['username']), ['errorField' => 'username']);
+        $rules->add($rules->isUnique(['email'], ['allowMultipleNulls' => true]), ['errorField' => 'email']);
         $rules->add($rules->existsIn(['branch_id'], 'Branches'), ['errorField' => 'branch_id']);
 
         return $rules;
