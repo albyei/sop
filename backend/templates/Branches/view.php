@@ -135,7 +135,6 @@
                         <tr>
                             <th><?= __('Id') ?></th>
                             <th><?= __('Username') ?></th>
-                            <th><?= __('Password') ?></th>
                             <th><?= __('Role') ?></th>
                             <th><?= __('Created') ?></th>
                             <th><?= __('Modified') ?></th>
@@ -145,7 +144,6 @@
                         <tr>
                             <td><?= h($user->id) ?></td>
                             <td><?= h($user->username) ?></td>
-                            <td><?= h($user->password) ?></td>
                             <td><?= h($user->role) ?></td>
                             <td><?= h($user->created) ?></td>
                             <td><?= h($user->modified) ?></td>

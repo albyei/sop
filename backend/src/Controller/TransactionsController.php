@@ -76,7 +76,11 @@ class TransactionsController extends AppController
             $data = $this->request->getData();
             // Fallback for user_id if not set by frontend
             $identity = $this->Authentication->getIdentity();
-            if ($identity) {
+            if ($identity && !self::isAdmin($identity)) {
+                // Non-admins always record transactions as themselves, in their own branch
+                $data['user_id'] = $identity->id;
+                $data['branch_id'] = $identity->branch_id;
+            } elseif ($identity) {
                 $data['user_id'] = $data['user_id'] ?? $identity->id;
                 $data['branch_id'] = $data['branch_id'] ?? $identity->branch_id;
                 // Fallback for users (like superadmin) who might not have a branch_id assigned
@@ -163,7 +167,13 @@ class TransactionsController extends AppController
     {
         $transaction = $this->Transactions->get($id, contain: []);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $transaction = $this->Transactions->patchEntity($transaction, $this->request->getData());
+            $data = $this->request->getData();
+            $identity = $this->Authentication->getIdentity();
+            if ($identity && !self::isAdmin($identity)) {
+                // Non-admins cannot move a transaction to another branch or user
+                unset($data['branch_id'], $data['user_id'], $data['branch'], $data['user']);
+            }
+            $transaction = $this->Transactions->patchEntity($transaction, $data);
             if ($this->Transactions->save($transaction)) {
                 if ($this->request->is('json')) {
                     $this->set(['success' => true, 'transaction' => $transaction]);

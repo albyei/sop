@@ -8,7 +8,12 @@
 <head>
     <?= $this->Html->charset() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title><?= $this->fetch('title') ?> - Kasir</title>
+    <title><?= $this->fetch('title') ?> - albyei</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="<?= $this->Url->build('/manifest.json') ?>">
+    <meta name="theme-color" content="#f97316">
+    <link rel="apple-touch-icon" href="<?= $this->Url->build('/img/pwa-icon.svg') ?>">
     <style>
         /* ============================================================
            FRESH JUICE POS DESIGN SYSTEM
@@ -247,7 +252,20 @@
     </style>
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
-    <?= $this->fetch('script') ?>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swUrl = '<?= $this->Url->build('/sw.js') ?>';
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => {
+                        console.log('PWA ServiceWorker registered with scope:', registration.scope);
+                    })
+                    .catch(err => {
+                        console.error('PWA ServiceWorker registration failed:', err);
+                    });
+            });
+        }
+    </script>
 </head>
 <body>
     <?php $identity = $this->request->getAttribute('identity'); ?>
@@ -263,7 +281,7 @@
                 </g>
                 <circle cx="13" cy="13" r="3.2" fill="#FFFFFF"/>
             </svg>
-            Kasir
+            albyei
         </div>
         <div class="nav-btns">
             <button class="<?= $this->request->getParam('action') === 'pos' ? 'active' : '' ?>" onclick="window.location.href='<?= $this->Url->build('/pages/pos') ?>'">Point of Sale</button>

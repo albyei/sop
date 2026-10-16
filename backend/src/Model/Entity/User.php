@@ -37,7 +37,8 @@ class User extends Entity
         'password' => true,
         'email' => true,
         'is_active' => true,
-        'role' => true,
+        // Never mass-assignable; UsersController sets it explicitly for admins only
+        'role' => false,
         'created' => false,
         'modified' => false,
         'branch' => false,

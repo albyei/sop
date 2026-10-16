@@ -18,6 +18,7 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Event\EventManager;
+use Cake\Http\Exception\ForbiddenException;
 use Cake\View\JsonView;
 
 /**
@@ -59,7 +60,7 @@ class AppController extends Controller
             $table = $event->getSubject();
             if ($table->hasField('branch_id')) {
                 $identity = $this->Authentication->getIdentity();
-                if ($identity && $identity->get('role') !== 'admin') {
+                if ($identity && !self::isAdmin($identity)) {
                     $query->where([$table->aliasField('branch_id') => $identity->get('branch_id')]);
                 }
             }
@@ -69,7 +70,8 @@ class AppController extends Controller
             $table = $event->getSubject();
             if ($table->hasField('branch_id')) {
                 $identity = $this->Authentication->getIdentity();
-                if ($identity && $identity->get('role') !== 'admin' && empty($entity->branch_id)) {
+                // Non-admins can only ever write into their own branch
+                if ($identity && !self::isAdmin($identity)) {
                     $entity->branch_id = $identity->get('branch_id');
                 }
             }
@@ -81,35 +83,50 @@ class AppController extends Controller
          */
         $this->loadComponent('FormProtection');
     }
+    /**
+     * Actions a non-admin user may reach, per controller. '*' allows every action.
+     * Access is decided by controller/action only, never by response format.
+     *
+     * @var array<string, array<string>>
+     */
+    protected const NON_ADMIN_ACTIONS = [
+        'Pages' => ['*'],
+        'Users' => ['login', 'logout', 'loginOtp', 'requestOtp', 'verifyOtp'],
+        'Transactions' => ['index', 'view', 'add', 'edit'],
+        'Menus' => ['index', 'view'],
+    ];
+
+    /**
+     * Whether the identity has the admin role (case-insensitive).
+     *
+     * @param \Authentication\IdentityInterface $identity Logged-in identity
+     * @return bool
+     */
+    public static function isAdmin($identity): bool
+    {
+        return strtolower((string)$identity->get('role')) === 'admin';
+    }
+
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
 
         $identity = $this->Authentication->getIdentity();
-        if ($identity && $identity->role === 'cashier') {
-            $controller = $this->request->getParam('controller');
-            $action = $this->request->getParam('action');
-            
-            // Allow API calls for JS cart (like /menus.json, /transactions/add.json)
-            if ($this->request->is('json')) {
-                return;
-            }
+        if (!$identity || self::isAdmin($identity)) {
+            return;
+        }
 
-            if (in_array($controller, ['Pages', 'Users'])) {
-                return;
+        $controller = $this->request->getParam('controller');
+        $action = $this->request->getParam('action');
+        $allowedActions = self::NON_ADMIN_ACTIONS[$controller] ?? [];
+
+        if (!in_array('*', $allowedActions, true) && !in_array($action, $allowedActions, true)) {
+            if ($this->request->is('json')) {
+                throw new ForbiddenException(__('You are not authorized to perform this action.'));
             }
-            
-            // Cashiers can only view, and for Transactions they can make/process transactions
-            $allowedActions = ['index', 'view'];
-            if ($controller === 'Transactions') {
-                $allowedActions[] = 'add';
-                $allowedActions[] = 'edit';
-            }
-            
-            if (!in_array($action, $allowedActions)) {
-                $this->Flash->error(__('You are not authorized to perform this action.'));
-                return $this->redirect($this->referer(['controller' => 'Pages', 'action' => 'pos']));
-            }
+            $this->Flash->error(__('You are not authorized to perform this action.'));
+
+            return $this->redirect(['controller' => 'Pages', 'action' => 'pos']);
         }
     }
 }

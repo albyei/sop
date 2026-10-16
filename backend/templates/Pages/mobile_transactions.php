@@ -542,7 +542,7 @@ foreach ($transactions as $t) {
 
 <script>
   // Inject real transactions from PHP
-  const TRANSACTIONS = <?= json_encode($transactionsData) ?>;
+  const TRANSACTIONS = <?= json_encode($transactionsData, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   
   // Setup API config for backend calls
   window.POS_CONFIG = {
@@ -568,6 +568,8 @@ foreach ($transactions as $t) {
   let activeTxnId = null;
 
   const rupiah = n => "Rp " + n.toLocaleString("id-ID");
+  // Escape user-controlled values before interpolating them into innerHTML
+  const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   const fmtDateTime = iso => {
     const d = new Date(iso);
     const date = d.toLocaleDateString("id-ID", { day:"2-digit", month:"short", year:"numeric" });
@@ -623,7 +625,7 @@ foreach ($transactions as $t) {
   }
 
   function itemsSummary(items){
-    const names = items.map(i => i.qty > 1 ? `${i.name} x${i.qty}` : i.name);
+    const names = items.map(i => i.qty > 1 ? `${esc(i.name)} x${esc(i.qty)}` : esc(i.name));
     if(names.length <= 2) return names.join(", ");
     return `${names.slice(0,2).join(", ")} <span class="more">+${names.length-2} more</span>`;
   }
@@ -657,10 +659,10 @@ foreach ($transactions as $t) {
       <div class="txn-card">
         <div class="txn-head">
           <div>
-            <div class="txn-customer">${t.customer}</div>
-            <div class="txn-meta">#${t.id} · ${fmtDateTime(t.datetime)}</div>
+            <div class="txn-customer">${esc(t.customer)}</div>
+            <div class="txn-meta">#${esc(t.id)} · ${fmtDateTime(t.datetime)}</div>
           </div>
-          <span class="status-badge status-${t.status}">${t.status}</span>
+          <span class="status-badge status-${esc(t.status)}">${esc(t.status)}</span>
         </div>
         <div class="txn-items">${itemsSummary(t.items)}</div>
         <div class="txn-foot">
@@ -681,18 +683,18 @@ foreach ($transactions as $t) {
     const total = txnTotal(t);
 
     drawerBody.innerHTML = `
-      <div class="detail-row"><span>Order ID</span><span>#${t.id}</span></div>
-      <div class="detail-row"><span>Customer</span><span>${t.customer}</span></div>
+      <div class="detail-row"><span>Order ID</span><span>#${esc(t.id)}</span></div>
+      <div class="detail-row"><span>Customer</span><span>${esc(t.customer)}</span></div>
       <div class="detail-row"><span>Date &amp; time</span><span>${fmtDateTime(t.datetime)}</span></div>
-      <div class="detail-row"><span>Payment method</span><span>${t.method || "—"}</span></div>
-      <div class="detail-row detail-status"><span>Status</span><span class="status-badge status-${t.status}">${t.status}</span></div>
+      <div class="detail-row"><span>Payment method</span><span>${esc(t.method || "—")}</span></div>
+      <div class="detail-row detail-status"><span>Status</span><span class="status-badge status-${esc(t.status)}">${esc(t.status)}</span></div>
 
       <div class="items-block">
         <div class="items-block-label">Items ordered</div>
         ${t.items.map(i => `
           <div class="detail-item-row">
-            <div class="detail-item-name">${i.name}</div>
-            <div class="detail-item-qty">x${i.qty}</div>
+            <div class="detail-item-name">${esc(i.name)}</div>
+            <div class="detail-item-qty">x${esc(i.qty)}</div>
             <div class="detail-item-price">${rupiah(i.qty*i.price)}</div>
           </div>
         `).join("")}

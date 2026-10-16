@@ -1,0 +1,17 @@
+{
+  "name": "albyei",
+  "short_name": "albyei",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#f97316",
+  "description": "Aplikasi Kasir albyei",
+  "icons": [
+    {
+      "src": "img/pwa-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -19,7 +19,7 @@ class UsersController extends AppController
     {
         parent::initialize();
 
-        $this->Authentication->allowUnauthenticated(['login', 'add', 'loginOtp', 'requestOtp', 'verifyOtp']);
+        $this->Authentication->allowUnauthenticated(['login', 'loginOtp', 'requestOtp', 'verifyOtp']);
     }
 
     /**
@@ -58,7 +58,10 @@ class UsersController extends AppController
     {
         $user = $this->Users->newEmptyEntity();
         if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
+            // Only admins reach this action (AppController::beforeFilter), so role may be set here
+            $user = $this->Users->patchEntity($user, $this->request->getData(), [
+                'accessibleFields' => ['role' => true],
+            ]);
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
 
@@ -81,7 +84,10 @@ class UsersController extends AppController
     {
         $user = $this->Users->get($id, contain: []);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
+            // Only admins reach this action (AppController::beforeFilter), so role may be set here
+            $user = $this->Users->patchEntity($user, $this->request->getData(), [
+                'accessibleFields' => ['role' => true],
+            ]);
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('The user has been saved.'));
 

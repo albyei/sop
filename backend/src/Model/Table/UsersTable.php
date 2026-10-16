@@ -84,7 +84,8 @@ class UsersTable extends Table
 
         $validator
             ->scalar('role')
-            ->notEmptyString('role');
+            ->notEmptyString('role')
+            ->inList('role', ['admin', 'cashier'], __('Role must be admin or cashier.'));
 
         $validator
             ->email('email')
